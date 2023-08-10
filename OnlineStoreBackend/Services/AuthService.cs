@@ -1,4 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using Microsoft.IdentityModel.Tokens;
+using OnlineStoreBackend.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace OnlineStoreBackend.Services
 {
@@ -13,6 +17,28 @@ namespace OnlineStoreBackend.Services
         {
             Regex regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
             return regex.IsMatch(email);
+        }
+
+        public static string CreateToken(User user, string SecretToken, string Issuer, string Audience)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(SecretToken));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                issuer: Issuer,
+                audience: Audience,
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: creds);
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            return jwt;
         }
     }
 }
