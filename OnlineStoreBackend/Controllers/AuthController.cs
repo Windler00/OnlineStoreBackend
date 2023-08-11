@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using OnlineStoreBackend.Dto;
 using OnlineStoreBackend.Models;
 using OnlineStoreBackend.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace OnlineStoreBackend.Controllers
 {
@@ -86,6 +88,43 @@ namespace OnlineStoreBackend.Controllers
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
                     return Ok(token);
                 }
+            }
+        }
+
+        [HttpPost("changename")]
+        [Authorize]
+        public async Task<ActionResult> ChangeName (ChangeNameDto request)
+        {
+            using (DataContext db = new DataContext())
+            {
+                var emailClaim = HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email);
+                var email = emailClaim.Value;
+                var user = db.Users.FirstOrDefault(u =>  u.Email.Contains(email));
+                if (user == null)
+                {
+                    return BadRequest("User not found");
+                }
+                user.Name = request.NewName;
+                db.SaveChanges();
+                return Ok("Username changed");
+            }
+        }
+
+        [HttpPost("changeemail")]
+        public async Task<ActionResult> ChangeEmail (ChangeEmailDto request)
+        {
+            using (DataContext db = new DataContext())
+            {
+                var emailClaim = HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email);
+                var email = emailClaim.Value;
+                var user = db.Users.FirstOrDefault(u => u.Email.Contains(email));
+                if (user == null)
+                {
+                    return BadRequest("User not found");
+                }
+                user.Email = request.NewEmail;
+                db.SaveChanges();
+                return Ok("Email changed");
             }
         }
     }
