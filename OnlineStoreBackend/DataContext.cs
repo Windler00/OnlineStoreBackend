@@ -6,6 +6,7 @@ namespace OnlineStoreBackend
     public class DataContext : DbContext
     {
         public DbSet<User> Users { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         public static string ConnectionString = string.Empty;
 

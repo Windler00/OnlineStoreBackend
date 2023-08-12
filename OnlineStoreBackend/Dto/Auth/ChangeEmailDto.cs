@@ -1,4 +1,4 @@
-﻿namespace OnlineStoreBackend.Dto
+﻿namespace OnlineStoreBackend.Dto.Auth
 {
     public class ChangeEmailDto
     {
