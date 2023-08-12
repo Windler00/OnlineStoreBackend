@@ -1,10 +1,10 @@
 ﻿namespace OnlineStoreBackend.Models
 {
-    public class Product
+    public class Category
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public List<Category> Categories { get; set; }
+        public int ParentId { get; set; }
+        public List<Product> Products { get; set; }
     }
 }
