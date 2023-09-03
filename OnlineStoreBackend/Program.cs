@@ -15,6 +15,16 @@ namespace OnlineStoreBackend
             var connectionString = builder.Configuration.GetSection("AppSettings:DbConnect");
             DataContext.ConnectionString = connectionString.Value;
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("PublicCors", builder =>
+                {
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyMethod();
+                    builder.AllowAnyOrigin();
+                });
+            });
+
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                     {
@@ -48,6 +58,7 @@ namespace OnlineStoreBackend
 
             app.UseAuthorization();
 
+            app.UseCors("PublicCors");
 
             app.MapControllers();
 

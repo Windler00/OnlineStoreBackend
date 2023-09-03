@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OnlineStoreBackend.Dto.Product;
+using OnlineStoreBackend.Dto.Category;
 using OnlineStoreBackend.Models;
 
 namespace OnlineStoreBackend.Controllers

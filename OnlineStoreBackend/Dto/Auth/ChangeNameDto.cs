@@ -2,6 +2,6 @@
 {
     public class ChangeNameDto
     {
-        public string NewName { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

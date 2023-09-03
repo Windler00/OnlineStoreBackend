@@ -1,4 +1,4 @@
-﻿namespace OnlineStoreBackend.Dto.Product
+﻿namespace OnlineStoreBackend.Dto.Category
 {
     public class CategoryDto
     {

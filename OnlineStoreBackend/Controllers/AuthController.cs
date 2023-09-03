@@ -28,21 +28,26 @@ namespace OnlineStoreBackend.Controllers
             using (DataContext db = new DataContext())
             {
                 User user = new User();
+                var userExist = db.Users.FirstOrDefault(u => u.Email.Contains(request.Email));
+                if(userExist != null)
+                {
+                    return BadRequest(new { message = "User already exist" });
+                }
                 if (!AuthService.IsValidEmail(request.Email))
                 {
-                    return BadRequest("Email incorrect");
+                    return BadRequest(new { message = "Email incorrect" });
                 }
                 if (!AuthService.IsValidPassword(request.Password))
                 {
-                    return BadRequest("Password incorrect(Minimum 1 uppercase, letter 1 symbol, minimum length 8 symbols)");
+                    return BadRequest(new { message = "Password incorrect(Minimum 1 uppercase, letter 1 symbol, minimum length 8 symbols)" });
                 }
                 if (request.Email != request.EmailConfirmation)
                 {
-                    return BadRequest("Email and email confirmation is not same");
+                    return BadRequest(new { message = "Email and email confirmation is not same" });
                 }
                 if (request.Password != request.PasswordConfirmation)
                 {
-                    return BadRequest("Password and password confirmation is not same");
+                    return BadRequest(new { message = "Password and password confirmation is not same" });
                 }
                 else
                 {
@@ -52,7 +57,7 @@ namespace OnlineStoreBackend.Controllers
                     db.Users.Add(user);
                     db.SaveChanges();
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
-                    return Ok(token);
+                    return Ok(new { token = token });
                 }
             }
         }
@@ -65,28 +70,24 @@ namespace OnlineStoreBackend.Controllers
                 var user = db.Users.FirstOrDefault(u => u.Email.Contains(request.Email));
                 if (!AuthService.IsValidEmail(request.Email))
                 {
-                    return BadRequest("Email is incorrect");
+                    return BadRequest(new { message = "Email is incorrect" });
                 }
                 if (!AuthService.IsValidPassword(request.Password))
                 {
-                    return BadRequest("Password incorrect(Minimum 1 uppercase, letter 1 symbol, minimum length 8 symbols)");
-                }
-                if (request.Password != request.PasswordConfirmation)
-                {
-                    return BadRequest("Passwords not same");
+                    return BadRequest(new { message = "Password incorrect(Minimum 1 uppercase, letter 1 symbol, minimum length 8 symbols)" });
                 }
                 if (user == null)
                 {
-                    return BadRequest("User not found");
+                    return BadRequest(new { message = "User not found" });
                 }
                 if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 {
-                    return BadRequest("Wrong password");
+                    return BadRequest(new { message = "Wrong password" });
                 }
                 else
                 {
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
-                    return Ok(token);
+                    return Ok(new { token = token });
                 }
             }
         }
@@ -102,15 +103,16 @@ namespace OnlineStoreBackend.Controllers
                 var user = db.Users.FirstOrDefault(u =>  u.Email.Contains(email));
                 if (user == null)
                 {
-                    return BadRequest("User not found");
+                    return BadRequest(new { message = "User not found" });
                 }
-                user.Name = request.NewName;
+                user.Name = request.Name;
                 db.SaveChanges();
-                return Ok("Username changed");
+                return Ok(new { message = "Username changed" });
             }
         }
 
         [HttpPost("changeemail")]
+        [Authorize]
         public async Task<ActionResult> ChangeEmail (ChangeEmailDto request)
         {
             using (DataContext db = new DataContext())
@@ -120,11 +122,42 @@ namespace OnlineStoreBackend.Controllers
                 var user = db.Users.FirstOrDefault(u => u.Email.Contains(email));
                 if (user == null)
                 {
-                    return BadRequest("User not found");
+                    return BadRequest(new { message = "User not found" });
                 }
-                user.Email = request.NewEmail;
+                if (!AuthService.IsValidEmail(request.Email))
+                {
+                    return BadRequest(new { message = "Email incorrect" });
+                }
+                user.Email = request.Email;
                 db.SaveChanges();
-                return Ok("Email changed");
+                return Ok(new { message = "Email changed" });
+            }
+        }
+        [HttpPost("changepass")]
+        [Authorize]
+        public async Task<ActionResult> ChangePass(ChangePassDto request)
+        {
+            using (DataContext db = new DataContext())
+            {
+                var emailClaim = HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email);
+                var email = emailClaim.Value;
+                var user = db.Users.FirstOrDefault(u => u.Email.Contains(email));
+                if (user == null)
+                {
+                    return BadRequest(new { message = "User not found" });
+                }
+                if(request.NewPass != request.NewPassRepeat)
+                {
+                    return BadRequest(new { message = "Password and repeat password not same" });
+                }
+                if (!AuthService.IsValidPassword(request.NewPass))
+                {
+                    return BadRequest(new { message = "Password incorrect" });
+                }
+                string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPass);
+                user.PasswordHash = passwordHash;
+                db.SaveChanges();
+                return Ok(new { message = "Password changed" });
             }
         }
     }
