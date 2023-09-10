@@ -53,11 +53,16 @@ namespace OnlineStoreBackend.Controllers
                 {
                     return BadRequest(new { message = "Password and password confirmation is not same" });
                 }
+                if(request.Username.Length < 3 & request.Username.Length < 30)
+                {
+                    return BadRequest(new { message = "Username incorrect(Minimum length 3, maximum length 30)" });
+                }
                 else
                 {
                     string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
                     user.Email = request.Email;
                     user.PasswordHash = passwordHash;
+                    user.Name = request.Username;
                     db.Users.Add(user);
                     db.SaveChanges();
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
