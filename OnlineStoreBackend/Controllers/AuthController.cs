@@ -160,5 +160,37 @@ namespace OnlineStoreBackend.Controllers
                 return Ok(new { message = "Password changed" });
             }
         }
+        [HttpPost("uploadavatar")]
+        [Authorize]
+        public async Task<ActionResult> UploadAvatar(IFormFile file)
+        {
+            if (file != null && file.Length > 0)
+            {
+                using (DataContext db = new DataContext())
+                {
+                    var emailClaim = HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email);
+                    var email = emailClaim.Value;
+                    var user = db.Users.FirstOrDefault(u => u.Email.Contains(email));
+                    if (user == null)
+                    {
+                        return BadRequest(new { message = "User not found" });
+                    }
+                    string fileExtension = Path.GetExtension(file.FileName);
+                    string fileName = Path.GetFileName(file.FileName);
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatar", fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    user.Avatar = filePath;
+                    db.SaveChanges();
+                    return Ok(new { message = "Avatar uploaded" });
+                }
+            }
+            else
+            {
+                return BadRequest(new { message = "Something went wrong avatar is not loaded" });
+            }
+        }
     }
 }

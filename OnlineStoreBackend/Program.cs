@@ -12,6 +12,21 @@ namespace OnlineStoreBackend
 
             // Add services to the container.
 
+            string avatar = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/avatar");
+
+            try
+            {
+                if (!Directory.Exists(avatar))
+                {
+                    Directory.CreateDirectory(avatar);
+                    Console.WriteLine("avatar folder created");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error when creating folder: {ex.Message}");
+            }
+
             var connectionString = builder.Configuration.GetSection("AppSettings:DbConnect");
             DataContext.ConnectionString = connectionString.Value;
 
@@ -55,6 +70,8 @@ namespace OnlineStoreBackend
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 
