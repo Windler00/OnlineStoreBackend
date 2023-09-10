@@ -66,7 +66,7 @@ namespace OnlineStoreBackend.Controllers
                     db.Users.Add(user);
                     db.SaveChanges();
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
-                    return Ok(new { token = token });
+                    return Ok(new {name = user.Name, role= user.Role, token = token });
                 }
             }
         }
@@ -96,7 +96,7 @@ namespace OnlineStoreBackend.Controllers
                 else
                 {
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
-                    return Ok(new { token = token });
+                    return Ok(new {name = user.Name, role= user.Role, avatar = user.Avatar, token = token });
                 }
             }
         }
