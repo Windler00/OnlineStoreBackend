@@ -30,6 +30,8 @@ namespace OnlineStoreBackend
             var connectionString = builder.Configuration.GetSection("AppSettings:DbConnect");
             DataContext.ConnectionString = connectionString.Value;
 
+            builder.Services.AddHttpContextAccessor();
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("PublicCors", builder =>

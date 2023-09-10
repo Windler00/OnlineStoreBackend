@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OnlineStoreBackend.Dto;
 using OnlineStoreBackend.Dto.Auth;
@@ -12,14 +13,17 @@ namespace OnlineStoreBackend.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         private string SecretToken = string.Empty;
         private string Issuer = string.Empty;
         private string Audience = string.Empty;
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             SecretToken = configuration.GetSection("AppSettings:Token").Value!;
             Issuer = configuration.GetSection("AppSettings:Issuer").Value!;
             Audience = configuration.GetSection("AppSettings:Audience").Value!;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("registration")]
@@ -182,7 +186,9 @@ namespace OnlineStoreBackend.Controllers
                     {
                         await file.CopyToAsync(stream);
                     }
-                    user.Avatar = filePath;
+                    var request = _httpContextAccessor.HttpContext.Request;
+                    var serverUrl = $"{request.Scheme}://{request.Host.Value}";
+                    user.Avatar = serverUrl+$"/avatar/{fileName}";
                     db.SaveChanges();
                     return Ok(new { message = "Avatar uploaded" });
                 }
