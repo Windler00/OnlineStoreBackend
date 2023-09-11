@@ -217,5 +217,25 @@ namespace OnlineStoreBackend.Controllers
                 return Ok(users);
             }
         }
+        [HttpPost("changerole")]
+        [Authorize(Roles ="Admin")]
+        public async Task<ActionResult> ChangeRole(ChangeRoleDto request)
+        {
+            using (DataContext db = new DataContext())
+            {
+                var user = db.Users.FirstOrDefault(u => u.Id == request.Id);
+                if(user == null)
+                {
+                    return BadRequest(new { message = "User not found" });
+                }
+                if(request.Role == "User" || request.Role == "Seller" || request.Role == "Admin")
+                {
+                    user.Role = request.Role;
+                    db.SaveChanges();
+                    return Ok(new { message = "Role changed" });
+                }
+                return BadRequest(new { message = "Incorrect role" });
+            }
+        }
     }
 }

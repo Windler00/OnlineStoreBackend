@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OnlineStoreBackend.Dto.Product;
 using OnlineStoreBackend.Models;
 
@@ -9,6 +10,7 @@ namespace OnlineStoreBackend.Controllers
     public class ProductController : ControllerBase
     {
         [HttpPost("createproduct")]
+        [Authorize(Roles = "Seller, Admin")]
         public async Task<ActionResult> CreateProduct(ProductDto request)
         {
             using (DataContext db = new DataContext())
@@ -16,17 +18,26 @@ namespace OnlineStoreBackend.Controllers
                 var product = db.Products.FirstOrDefault(p => p.Name.Contains(request.Name));
                 if (product != null)
                 {
-                    return Conflict("Product alredy exist");
+                    return Conflict(new { message = "Product alredy exist" });
+                }
+                if (request.Name.Length < 5)
+                {
+                    return BadRequest(new { message = "Minimum product name length 5" });
+                }
+                if (request.Description.Length < 5)
+                {
+                    return BadRequest(new { message = "Minimum product description length 5" });
                 }
                 Product newProduct = new Product();
                 newProduct.Name = request.Name;
                 newProduct.Description = request.Description;
                 db.Products.Add(newProduct);
                 db.SaveChanges();
-                return Ok("Product added");
+                return Ok(new { message = "Product added" });
             }
         }
         [HttpDelete("deleteproduct")]
+        [Authorize(Roles = "Seller")]
         public async Task<ActionResult> DeleteProduct(ProductDto request)
         {
             using(DataContext db = new DataContext())
@@ -42,6 +53,7 @@ namespace OnlineStoreBackend.Controllers
             }
         }
         [HttpPatch("changeproduct")]
+        [Authorize(Roles = "Seller")]
         public async Task<ActionResult> ChangeProduct (ProductDto request)
         {
             using(DataContext db = new DataContext())
