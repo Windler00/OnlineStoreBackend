@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OnlineStoreBackend.Dto;
 using OnlineStoreBackend.Dto.Auth;
@@ -33,7 +32,7 @@ namespace OnlineStoreBackend.Controllers
             {
                 User user = new User();
                 var userExist = db.Users.FirstOrDefault(u => u.Email.Contains(request.Email));
-                if(userExist != null)
+                if (userExist != null)
                 {
                     return BadRequest(new { message = "User already exist" });
                 }
@@ -53,7 +52,7 @@ namespace OnlineStoreBackend.Controllers
                 {
                     return BadRequest(new { message = "Password and password confirmation is not same" });
                 }
-                if(request.Username.Length < 3 & request.Username.Length < 30)
+                if (request.Username.Length < 3 & request.Username.Length < 30)
                 {
                     return BadRequest(new { message = "Username incorrect(Minimum length 3, maximum length 30)" });
                 }
@@ -66,7 +65,7 @@ namespace OnlineStoreBackend.Controllers
                     db.Users.Add(user);
                     db.SaveChanges();
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
-                    return Ok(new {name = user.Name, role= user.Role, token = token });
+                    return Ok(new { name = user.Name, role = user.Role, token = token });
                 }
             }
         }
@@ -96,20 +95,20 @@ namespace OnlineStoreBackend.Controllers
                 else
                 {
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
-                    return Ok(new {name = user.Name, role= user.Role, avatar = user.Avatar, token = token });
+                    return Ok(new { name = user.Name, role = user.Role, avatar = user.Avatar, token = token });
                 }
             }
         }
 
         [HttpPost("changename")]
         [Authorize]
-        public async Task<ActionResult> ChangeName (ChangeNameDto request)
+        public async Task<ActionResult> ChangeName(ChangeNameDto request)
         {
             using (DataContext db = new DataContext())
             {
                 var emailClaim = HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email);
                 var email = emailClaim.Value;
-                var user = db.Users.FirstOrDefault(u =>  u.Email.Contains(email));
+                var user = db.Users.FirstOrDefault(u => u.Email.Contains(email));
                 if (user == null)
                 {
                     return BadRequest(new { message = "User not found" });
@@ -122,7 +121,7 @@ namespace OnlineStoreBackend.Controllers
 
         [HttpPost("changeemail")]
         [Authorize]
-        public async Task<ActionResult> ChangeEmail (ChangeEmailDto request)
+        public async Task<ActionResult> ChangeEmail(ChangeEmailDto request)
         {
             using (DataContext db = new DataContext())
             {
@@ -155,7 +154,7 @@ namespace OnlineStoreBackend.Controllers
                 {
                     return BadRequest(new { message = "User not found" });
                 }
-                if(request.NewPass != request.NewPassRepeat)
+                if (request.NewPass != request.NewPassRepeat)
                 {
                     return BadRequest(new { message = "Password and repeat password not same" });
                 }
@@ -184,6 +183,13 @@ namespace OnlineStoreBackend.Controllers
                     {
                         return BadRequest(new { message = "User not found" });
                     }
+                    var oldFileName = Path.GetFileName(user.Avatar);
+                    string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatar", oldFileName);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+
                     string fileExtension = Path.GetExtension(file.FileName);
                     string fileName = Path.GetFileName(file.FileName);
                     string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatar", fileName);
@@ -193,9 +199,9 @@ namespace OnlineStoreBackend.Controllers
                     }
                     var request = _httpContextAccessor.HttpContext.Request;
                     var serverUrl = $"{request.Scheme}://{request.Host.Value}";
-                    user.Avatar = serverUrl+$"/avatar/{fileName}";
+                    user.Avatar = serverUrl + $"/avatar/{fileName}";
                     db.SaveChanges();
-                    return Ok(new { message = "Avatar uploaded" });
+                    return Ok(new { message = "Avatar uploaded", avatar = user.Avatar });
                 }
             }
             else
@@ -218,17 +224,17 @@ namespace OnlineStoreBackend.Controllers
             }
         }
         [HttpPost("changerole")]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> ChangeRole(ChangeRoleDto request)
         {
             using (DataContext db = new DataContext())
             {
                 var user = db.Users.FirstOrDefault(u => u.Id == request.Id);
-                if(user == null)
+                if (user == null)
                 {
                     return BadRequest(new { message = "User not found" });
                 }
-                if(request.Role == "User" || request.Role == "Seller" || request.Role == "Admin")
+                if (request.Role == "User" || request.Role == "Seller" || request.Role == "Admin")
                 {
                     user.Role = request.Role;
                     db.SaveChanges();
