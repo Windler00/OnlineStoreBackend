@@ -33,11 +33,36 @@ namespace OnlineStoreBackend.Controllers
                 newProduct.Description = request.Description;
                 db.Products.Add(newProduct);
                 db.SaveChanges();
-                return Ok(new { message = "Product added" });
+                product = db.Products.FirstOrDefault(p => p.Name.Contains(request.Name));
+                return Ok(new { message = "Product added", product = product});
+            }
+        }
+        [HttpPost("uploadimage")]
+        [Authorize(Roles = "Seller, Admin")]
+        public async Task<ActionResult> UploadImage(IFormFile file, int id)
+        {
+            using (DataContext db = new DataContext())
+            {
+                if (file != null)
+                {
+                    var product = db.Products.FirstOrDefault(p => p.Id == id);
+                    product.ImageName = file.Name;
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(memoryStream);
+                        product.ImageData = memoryStream.ToArray();
+                    }
+                    db.SaveChanges();
+                    return Ok(new { message = "Image uploaded"});
+                }
+                else
+                {
+                    return BadRequest(new { message = "File is missing." });
+                }
             }
         }
         [HttpDelete("deleteproduct")]
-        [Authorize(Roles = "Seller")]
+        [Authorize(Roles = "Seller, Admin")]
         public async Task<ActionResult> DeleteProduct(ProductDto request)
         {
             using(DataContext db = new DataContext())
@@ -53,20 +78,20 @@ namespace OnlineStoreBackend.Controllers
             }
         }
         [HttpPatch("changeproduct")]
-        [Authorize(Roles = "Seller")]
-        public async Task<ActionResult> ChangeProduct (ProductDto request)
+        [Authorize(Roles = "Seller, Admin")]
+        public async Task<ActionResult> ChangeProduct (ChangeProductDto request)
         {
             using(DataContext db = new DataContext())
             {
-                var product = db.Products.FirstOrDefault(u => u.Name == request.Name);
+                var product = db.Products.FirstOrDefault(u => u.Id == request.Id);
                 if(product == null)
                 {
-                    return BadRequest("Product not found");
+                    return BadRequest(new { message = "Product not found"});
                 }
                 product.Name = request.Name;
                 product.Description = request.Description;
                 db.SaveChanges();
-                return Ok("Product changed");
+                return Ok(new {message = "Product changed" });
             }
         }
         [HttpPost("getproduct")]
@@ -77,7 +102,7 @@ namespace OnlineStoreBackend.Controllers
                 var product = db.Products.FirstOrDefault(p => p.Id == request.Id);
                 if (product == null)
                 {
-                    return BadRequest("Product not found");
+                    return BadRequest(new { message = "Product not found" });
                 }
                 return Ok(product);
             }
@@ -88,6 +113,7 @@ namespace OnlineStoreBackend.Controllers
             using(DataContext db = new DataContext())
             {
                 var products = db.Products
+                    .OrderBy(p => p.Id)
                     .Skip(request.First)
                     .Take(request.Last)
                     .ToList();
