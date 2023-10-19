@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OnlineStoreBackend.Dto.Product;
 using OnlineStoreBackend.Models;
+using System.Security.Claims;
 
 namespace OnlineStoreBackend.Controllers
 {
@@ -9,6 +10,13 @@ namespace OnlineStoreBackend.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public ProductController(IHttpContextAccessor httpContextAccessor)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
+
         [HttpPost("createproduct")]
         [Authorize(Roles = "Seller, Admin")]
         public async Task<ActionResult> CreateProduct(ProductDto request)
@@ -31,6 +39,9 @@ namespace OnlineStoreBackend.Controllers
                 Product newProduct = new Product();
                 newProduct.Name = request.Name;
                 newProduct.Description = request.Description;
+                var requestctx = _httpContextAccessor.HttpContext.Request;
+                var serverUrl = $"{requestctx.Scheme}://{requestctx.Host.Value}";
+                newProduct.ImageUrl = serverUrl + $"/default/ProductImage.jpg";
                 db.Products.Add(newProduct);
                 db.SaveChanges();
                 product = db.Products.FirstOrDefault(p => p.Name.Contains(request.Name));
@@ -41,24 +52,39 @@ namespace OnlineStoreBackend.Controllers
         [Authorize(Roles = "Seller, Admin")]
         public async Task<ActionResult> UploadImage(IFormFile file, int id)
         {
-            using (DataContext db = new DataContext())
+            if (file != null && file.Length > 0)
             {
-                if (file != null)
+                using (DataContext db = new DataContext())
                 {
                     var product = db.Products.FirstOrDefault(p => p.Id == id);
-                    product.ImageName = file.Name;
-                    using (var memoryStream = new MemoryStream())
+                    if (product == null)
                     {
-                        await file.CopyToAsync(memoryStream);
-                        product.ImageData = memoryStream.ToArray();
+                        return BadRequest(new { message = "Product not found" });
                     }
+                    var oldFileName = Path.GetFileName(product.ImageUrl);
+                    string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "productimages", oldFileName);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+
+                    string fileExtension = Path.GetExtension(file.FileName);
+                    string fileName = Path.GetFileName(file.FileName);
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "productimages", fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    var request = _httpContextAccessor.HttpContext.Request;
+                    var serverUrl = $"{request.Scheme}://{request.Host.Value}";
+                    product.ImageUrl = serverUrl + $"/productimages/{fileName}";
                     db.SaveChanges();
-                    return Ok(new { message = "Image uploaded"});
+                    return Ok(new { message = "Product image uploaded", imageUrl = product.ImageUrl });
                 }
-                else
-                {
-                    return BadRequest(new { message = "File is missing." });
-                }
+            }
+            else
+            {
+                return BadRequest(new { message = "Something went wrong product image is not loaded" });
             }
         }
         [HttpDelete("deleteproduct")]

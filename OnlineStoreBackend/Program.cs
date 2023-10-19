@@ -13,6 +13,7 @@ namespace OnlineStoreBackend
             // Add services to the container.
 
             string avatar = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/avatar");
+            string productimages = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/productimages");
 
             try
             {
@@ -20,6 +21,11 @@ namespace OnlineStoreBackend
                 {
                     Directory.CreateDirectory(avatar);
                     Console.WriteLine("avatar folder created");
+                }
+                if (!Directory.Exists(productimages))
+                {
+                    Directory.CreateDirectory(productimages);
+                    Console.WriteLine("product images folder created");
                 }
             }
             catch (Exception ex)
