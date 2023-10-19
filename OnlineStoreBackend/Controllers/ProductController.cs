@@ -70,11 +70,11 @@ namespace OnlineStoreBackend.Controllers
                 var product = db.Products.FirstOrDefault(p => p.Name == request.Name);
                 if (product == null)
                 {
-                    return BadRequest("Product not found");
+                    return BadRequest(new { message = "Product not found" });
                 }
                 db.Products.Remove(product);
                 db.SaveChanges();
-                return Ok("Product deleted");
+                return Ok(new { message = "Product deleted" });
             }
         }
         [HttpPatch("changeproduct")]
