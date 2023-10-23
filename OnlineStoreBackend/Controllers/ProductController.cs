@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OnlineStoreBackend.Dto.Product;
 using OnlineStoreBackend.Models;
 using System.Security.Claims;
@@ -134,16 +135,28 @@ namespace OnlineStoreBackend.Controllers
             }
         }
         [HttpPost("getproducts")]
-        public async Task<ActionResult> GetProducts(GetProductsDto request)
+        public async Task<ActionResult> GetProducts(int page = 1, int pageSize = 10)
         {
             using(DataContext db = new DataContext())
             {
+                var totalCount = db.Products.Count();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
                 var products = db.Products
-                    .OrderBy(p => p.Id)
-                    .Skip(request.First)
-                    .Take(request.Last)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToList();
-                return Ok(products);
+
+                var result = new
+                {
+                    TotalCount = totalCount,
+                    TotalPages = totalPages,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    Products = products
+                };
+
+                return Ok(result);
             }
         }
     }
