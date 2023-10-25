@@ -40,6 +40,7 @@ namespace OnlineStoreBackend.Controllers
                 Product newProduct = new Product();
                 newProduct.Name = request.Name;
                 newProduct.Description = request.Description;
+                newProduct.Price = request.Price;
                 var requestctx = _httpContextAccessor.HttpContext.Request;
                 var serverUrl = $"{requestctx.Scheme}://{requestctx.Host.Value}";
                 newProduct.ImageUrl = serverUrl + $"/default/ProductImage.jpg";
@@ -117,6 +118,7 @@ namespace OnlineStoreBackend.Controllers
                 }
                 product.Name = request.Name;
                 product.Description = request.Description;
+                product.Price = request.Price;
                 db.SaveChanges();
                 return Ok(new {message = "Product changed" });
             }
