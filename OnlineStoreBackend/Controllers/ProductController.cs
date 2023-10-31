@@ -41,6 +41,7 @@ namespace OnlineStoreBackend.Controllers
                 newProduct.Name = request.Name;
                 newProduct.Description = request.Description;
                 newProduct.Price = request.Price;
+                newProduct.Quantity = request.Quantity;
                 var requestctx = _httpContextAccessor.HttpContext.Request;
                 var serverUrl = $"{requestctx.Scheme}://{requestctx.Host.Value}";
                 newProduct.ImageUrl = serverUrl + $"/default/ProductImage.jpg";
@@ -119,6 +120,7 @@ namespace OnlineStoreBackend.Controllers
                 product.Name = request.Name;
                 product.Description = request.Description;
                 product.Price = request.Price;
+                product.Quantity = request.Quantity;
                 db.SaveChanges();
                 return Ok(new {message = "Product changed" });
             }
