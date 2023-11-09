@@ -10,5 +10,6 @@
         public List<User> Owners { get; set; }
         public string ImageUrl { get; set; } = string.Empty;
         public List<Category> Categories { get; set; }
+        public BasketItem BasketItem { get; set; }
     }
 }

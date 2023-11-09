@@ -64,8 +64,9 @@ namespace OnlineStoreBackend.Controllers
                     user.Name = request.Username;
                     db.Users.Add(user);
                     db.SaveChanges();
+                    db.SaveChanges();
                     var token = AuthService.CreateToken(user, SecretToken, Issuer, Audience);
-                    return Ok(new { name = user.Name, role = user.Role, token = token });
+                    return Ok(new { name = user.Name, role = user.Role, token = token});
                 }
             }
         }
