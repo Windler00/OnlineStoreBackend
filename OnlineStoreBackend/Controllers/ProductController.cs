@@ -126,11 +126,11 @@ namespace OnlineStoreBackend.Controllers
             }
         }
         [HttpPost("getproduct")]
-        public async Task<ActionResult> GetProduct(GetProductDto request)
+        public async Task<ActionResult> GetProduct(int id)
         {
             using(DataContext db = new DataContext())
             {
-                var product = db.Products.FirstOrDefault(p => p.Id == request.Id);
+                var product = db.Products.FirstOrDefault(p => p.Id == id);
                 if (product == null)
                 {
                     return BadRequest(new { message = "Product not found" });

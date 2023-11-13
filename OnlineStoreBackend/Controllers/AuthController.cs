@@ -210,16 +210,16 @@ namespace OnlineStoreBackend.Controllers
                 return BadRequest(new { message = "Something went wrong avatar is not loaded" });
             }
         }
-        [HttpPost("getusers")]
+        [HttpGet("getusers")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> GetUsers(GetUsers request)
+        public async Task<ActionResult> GetUsers(int first, int last)
         {
             using (DataContext db = new DataContext())
             {
                 var users = db.Users
                     .OrderBy(u => u.Id)
-                    .Skip(request.First)
-                    .Take(request.Last)
+                    .Skip(first)
+                    .Take(last)
                     .ToList();
                 return Ok(users);
             }
