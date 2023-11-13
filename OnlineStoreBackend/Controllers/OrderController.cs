@@ -5,7 +5,7 @@ using System.Security.Claims;
 
 namespace OnlineStoreBackend.Controllers
 {
-    [Route("api/basket")]
+    [Route("api/order")]
     [ApiController]
     public class OrderController : ControllerBase
     {
