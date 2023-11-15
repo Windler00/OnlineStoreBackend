@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using OnlineStoreBackend.Models;
 using System.Security.Claims;
 
@@ -39,7 +40,7 @@ namespace OnlineStoreBackend.Controllers
         }
         [HttpGet("getproducts")]
         [Authorize]
-        public async Task<ActionResult> GetProducts()
+        public async Task<ActionResult> GetProducts(int page = 1, int pageSize = 10)
         {
             using (DataContext db = new DataContext())
             {
@@ -55,8 +56,23 @@ namespace OnlineStoreBackend.Controllers
                         b.Quantity
                     }).ToList();
 
+                var totalCount = orderList.Count();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+                var products = orderList
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
 
-                return Ok(orderList);
+                var result = new
+                {
+                    TotalCount = totalCount,
+                    TotalPages = totalPages,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    Products = products
+                };
+
+                return Ok(result);
             }
         }
         [HttpDelete("deleteproduct")]

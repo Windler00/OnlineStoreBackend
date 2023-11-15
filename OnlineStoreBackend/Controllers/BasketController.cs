@@ -5,6 +5,7 @@ using OnlineStoreBackend.Models;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace OnlineStoreBackend.Controllers
 {
@@ -42,7 +43,7 @@ namespace OnlineStoreBackend.Controllers
         }
         [HttpGet("getproducts")]
         [Authorize]
-        public async Task<ActionResult> GetProducts()
+        public async Task<ActionResult> GetProducts(int page = 1, int pageSize = 10)
         {
             using (DataContext db = new DataContext())
             {
@@ -58,8 +59,23 @@ namespace OnlineStoreBackend.Controllers
                         b.Quantity
                     }).ToList();
 
+                var totalCount = basketList.Count();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+                var products = basketList
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
 
-                return Ok(basketList);
+                var result = new
+                {
+                    TotalCount = totalCount,
+                    TotalPages = totalPages,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    Products = products
+                };
+
+                return Ok(result);
             }
         }
         [HttpDelete("deleteproduct")]

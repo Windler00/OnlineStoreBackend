@@ -138,7 +138,7 @@ namespace OnlineStoreBackend.Controllers
                 return Ok(product);
             }
         }
-        [HttpPost("getproducts")]
+        [HttpGet("getproducts")]
         public async Task<ActionResult> GetProducts(int page = 1, int pageSize = 10)
         {
             using(DataContext db = new DataContext())
