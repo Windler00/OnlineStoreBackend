@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using OnlineStoreBackend.Dto;
 using OnlineStoreBackend.Dto.Auth;
 using OnlineStoreBackend.Models;
@@ -212,16 +213,27 @@ namespace OnlineStoreBackend.Controllers
         }
         [HttpGet("getusers")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> GetUsers(int first, int last)
+        public async Task<ActionResult> GetUsers(int page = 1, int pageSize = 10)
         {
             using (DataContext db = new DataContext())
             {
+                var totalCount = db.Users.Count();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
                 var users = db.Users
-                    .OrderBy(u => u.Id)
-                    .Skip(first)
-                    .Take(last)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToList();
-                return Ok(users);
+
+                var result = new
+                {
+                    TotalCount = totalCount,
+                    TotalPages = totalPages,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    Users = users
+                };
+
+                return Ok(result);
             }
         }
         [HttpPost("changerole")]

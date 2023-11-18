@@ -125,7 +125,7 @@ namespace OnlineStoreBackend.Controllers
                 return Ok(new {message = "Product changed" });
             }
         }
-        [HttpPost("getproduct")]
+        [HttpGet("getproduct")]
         public async Task<ActionResult> GetProduct(int id)
         {
             using(DataContext db = new DataContext())
