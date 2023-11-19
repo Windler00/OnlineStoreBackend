@@ -22,23 +22,33 @@ namespace OnlineStoreBackend.Controllers
                 var emailClaim = HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email);
                 var email = emailClaim.Value;
                 var user = db.Users.FirstOrDefault(u => u.Email.Contains(email));
+                if(user == null)
+                {
+                    return BadRequest(new { error = "User not exist" });
+                }
 
                 var product = db.Products.FirstOrDefault(p => p.Id == ProductId);
                 if(product == null)
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new {error = "Product not exist" });
                 }
-                if(Quantity < product.Quantity)
+                if(product.Quantity < Quantity)
                 {
-                    return BadRequest("Unacceptable quantity");
+                    return BadRequest(new { error = "Unacceptable quantity" });
                 }
-                BasketItem basketItem = new BasketItem();
-                basketItem.Product = product;
-                basketItem.Quantity = Quantity;
-                basketItem.User = user;
-                db.BasketItems.Add(basketItem);
+                var basketItem = db.BasketItems.FirstOrDefault(b => b.ProductId == ProductId);
+                if(basketItem != null)
+                {
+                    return BadRequest(new { error = "Product already in basket" });
+                }
+
+                BasketItem newBasketItem = new BasketItem();
+                newBasketItem.Product = product;
+                newBasketItem.Quantity = Quantity;
+                newBasketItem.User = user;
+                db.BasketItems.Add(newBasketItem);
                 db.SaveChanges();
-                return Ok("Product added to basket");
+                return Ok(new {success = "Product added to basket" });
             }
         }
         [HttpGet("getproducts")]
@@ -91,17 +101,17 @@ namespace OnlineStoreBackend.Controllers
                 var basketItem = db.BasketItems.FirstOrDefault(b => b.ProductId == ProductId);
                 if (basketItem == null)
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new {error = "Product not exist"});
                 }
                 if(user.Id == basketItem.UserId)
                 {
                     db.BasketItems.Remove(basketItem);
                     db.SaveChanges();
-                    return Ok("Product removed from basket");
+                    return Ok(new { success = "Product removed from basket" });
                 }
                 else
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new { error = "Product not exist" });
                 }
             }
         }
@@ -118,21 +128,21 @@ namespace OnlineStoreBackend.Controllers
                 var basketItem = db.BasketItems.FirstOrDefault(b => b.ProductId == ProductId);
                 if (basketItem == null)
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new { error = "Product not exist" });
                 }
                 if (Quantity < basketItem.Quantity)
                 {
-                    return BadRequest("Unacceptable quantity");
+                    return BadRequest(new { error = "Unacceptable quantity" });
                 }
                 if (user.Id == basketItem.UserId)
                 {
                     basketItem.Quantity = Quantity;
                     db.SaveChanges();
-                    return Ok("Product removed from basket");
+                    return Ok(new { success = "Product removed from basket" });
                 }
                 else
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new { error = "Product not exist" });
                 }
             }
         }
