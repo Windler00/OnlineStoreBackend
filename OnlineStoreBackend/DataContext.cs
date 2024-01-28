@@ -19,14 +19,14 @@ namespace OnlineStoreBackend
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-            .HasMany(u => u.BasketList)
-            .WithOne(b => b.User)
-            .HasForeignKey(b => b.UserId);
 
             modelBuilder.Entity<BasketItem>()
              .HasOne(b => b.Product)
              .WithOne(p => p.BasketItem);
+
+            modelBuilder.Entity<OrderItem>()
+             .HasOne(b => b.Product)
+             .WithOne(p => p.OrderItem);
 
             modelBuilder.Entity<Product>()
              .HasMany(p => p.Categories)

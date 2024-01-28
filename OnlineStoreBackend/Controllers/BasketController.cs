@@ -130,7 +130,7 @@ namespace OnlineStoreBackend.Controllers
                 {
                     return BadRequest(new { error = "Product not exist" });
                 }
-                if (Quantity < basketItem.Quantity)
+                if (Quantity < basketItem.Quantity && Quantity <= 0)
                 {
                     return BadRequest(new { error = "Unacceptable quantity" });
                 }
@@ -138,7 +138,7 @@ namespace OnlineStoreBackend.Controllers
                 {
                     basketItem.Quantity = Quantity;
                     db.SaveChanges();
-                    return Ok(new { success = "Product removed from basket" });
+                    return Ok();
                 }
                 else
                 {

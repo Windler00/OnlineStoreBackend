@@ -23,19 +23,20 @@ namespace OnlineStoreBackend.Controllers
                 var product = db.Products.FirstOrDefault(p => p.Id == ProductId);
                 if (product == null)
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new { error = "Product not exist" });
                 }
-                if (Quantity < product.Quantity)
+                if (Quantity > product.Quantity)
                 {
-                    return BadRequest("Unacceptable quantity");
+                    return BadRequest(new { error = "Unacceptable quantity" });
                 }
                 OrderItem orderItem = new OrderItem();
                 orderItem.Product = product;
                 orderItem.Quantity = Quantity;
                 orderItem.User = user;
                 db.OrderItems.Add(orderItem);
+                product.Quantity = product.Quantity - Quantity;
                 db.SaveChanges();
-                return Ok("Product added to basket");
+                return Ok(new { success = "Product added to orders" });
             }
         }
         [HttpGet("getproducts")]
@@ -88,17 +89,17 @@ namespace OnlineStoreBackend.Controllers
                 var orderItem = db.OrderItems.FirstOrDefault(b => b.ProductId == ProductId);
                 if (orderItem == null)
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new { error = "Product not exist" });
                 }
                 if (user.Id == orderItem.UserId)
                 {
                     db.OrderItems.Remove(orderItem);
                     db.SaveChanges();
-                    return Ok("Product removed from basket");
+                    return Ok(new { success = "Product removed from basket" });
                 }
                 else
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new { error = "Product not exist" });
                 }
             }
         }
@@ -115,21 +116,21 @@ namespace OnlineStoreBackend.Controllers
                 var orderItem = db.OrderItems.FirstOrDefault(b => b.ProductId == ProductId);
                 if (orderItem == null)
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new { error = "Product not exist" });
                 }
                 if (Quantity < orderItem.Quantity)
                 {
-                    return BadRequest("Unacceptable quantity");
+                    return BadRequest(new { error = "Unacceptable quantity" });
                 }
                 if (user.Id == orderItem.UserId)
                 {
                     orderItem.Quantity = Quantity;
                     db.SaveChanges();
-                    return Ok("Product removed from basket");
+                    return Ok(new { success = "Product removed from basket" });
                 }
                 else
                 {
-                    return BadRequest("Product not exist");
+                    return BadRequest(new { error = "Product not exist" });
                 }
             }
         }

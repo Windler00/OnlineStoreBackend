@@ -9,7 +9,7 @@
         public string Role { get; set; } = "User";
         public string PasswordHash { get; set; } = string.Empty;
         public string Avatar { get; set; } = string.Empty;
-        public OrderItem Order { get; set; }
         public List<BasketItem> BasketList { get; set; }
+        public List<OrderItem> OrderList {  get; set; }
     }
 }
