@@ -29,11 +29,19 @@ namespace OnlineStoreBackend.Controllers
                 {
                     return BadRequest(new { error = "Unacceptable quantity" });
                 }
-                OrderItem orderItem = new OrderItem();
-                orderItem.Product = product;
-                orderItem.Quantity = Quantity;
-                orderItem.User = user;
-                db.OrderItems.Add(orderItem);
+                OrderItem orderItem = db.OrderItems.FirstOrDefault(o => o.ProductId == ProductId);
+                if (orderItem != null)
+                {
+                    orderItem.Quantity = orderItem.Quantity + Quantity;
+                    product.Quantity = product.Quantity - Quantity;
+                    db.SaveChanges();
+                    return Ok(new { success = "Product added to orders" });
+                }
+                OrderItem newOrderItem = new OrderItem();
+                newOrderItem.Product = product;
+                newOrderItem.Quantity = Quantity;
+                newOrderItem.User = user;
+                db.OrderItems.Add(newOrderItem);
                 product.Quantity = product.Quantity - Quantity;
                 db.SaveChanges();
                 return Ok(new { success = "Product added to orders" });
